@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Speaking Practice</title>
+
+    <link rel="stylesheet"
+          href="css/style.css">
+
+</head>
+
+<body>
+
+    <header>
+
+        <h1>Speaking Practice</h1>
+
+        <p>
+            Practice One-Minute Speaking Topics
+        </p>
+
+    </header>
+
+    <div class="card">
+
+        <h2 id="topic">
+
+            Click below to get a topic
+
+        </h2>
+
+        <button onclick="generateTopic()">
+
+            Generate Topic
+
+        </button>
+
+        <h1 id="timer">
+
+            60
+
+        </h1>
+
+        <button onclick="startTimer(); startRecognition()">
+
+            Start Speaking
+
+        </button>
+
+        <br><br>
+
+        <h3>Your Speech:</h3>
+
+        <p id="output">
+
+            Your speech will appear here...
+
+        </p>
+
+        <br><br>
+
+        <a href="report.html">
+
+            <button>
+
+                Finish Round
+
+            </button>
+
+        </a>
+
+    </div>
+
+    <script src="js/script.js"></script>
+
+</body>
+
+</html>

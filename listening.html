@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Listening Practice</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+    <header>
+        <h1>Listening Practice</h1>
+        <p>Listen carefully and repeat the sentence</p>
+    </header>
+
+    <div class="card">
+
+        <h2 id="status">Click Play to hear a sentence</h2>
+
+        <button onclick="playSentence()">🔊 Play Sentence</button>
+
+        <br><br>
+
+        <button onclick="startListeningRecognition()" 
+                id="repeatBtn" disabled>🎤 Repeat Sentence</button>
+
+        <br><br>
+
+        <h3>Your Speech:</h3>
+        <p id="userSpeech">Your repeated sentence will appear here...</p>
+
+        <br>
+
+        <div id="result"></div>
+
+        <br>
+
+        <button onclick="nextSentence()" 
+                id="nextBtn" style="display:none">Next Sentence</button>
+
+        <br><br>
+
+        <a href="report.html">
+            <button>Finish Round</button>
+        </a>
+
+    </div>
+
+    <script>
+
+        let sentences = [
+            "Please submit your assignment before the deadline",
+            "The meeting has been rescheduled to Friday afternoon",
+            "Make sure to read the instructions carefully before you begin",
+            "The manager will review your application within three working days",
+            "Always maintain a professional tone in your emails",
+            "The office will remain closed on account of the national holiday",
+            "Kindly confirm your attendance by replying to this message",
+            "The training session will begin at nine in the morning",
+            "Candidates who perform well in the communication round will be shortlisted for the next stage",
+            "The ability to work effectively under pressure is a highly valued professional skill",
+            "Our organization encourages employees to take ownership of their responsibilities",
+            "Strong interpersonal skills are essential for building lasting client relationships",
+            "The project team was commended for delivering results ahead of the expected timeline"
+        ];
+
+        let currentSentence = "";
+        let hasPlayed = false;
+        let hasRepeated = false;
+
+        function playSentence() {
+            if (hasPlayed && !hasRepeated) {
+                reSpeakSentence();
+                return;
+            }
+            if (!hasPlayed) {
+                pickNewSentence();
+            }
+        }
+
+        function pickNewSentence() {
+            let randomIndex = Math.floor(Math.random() * sentences.length);
+            currentSentence = sentences[randomIndex];
+
+            hasPlayed = false;
+            hasRepeated = false;
+
+            document.getElementById("status").innerText = "🔊 Listen carefully...";
+            document.getElementById("userSpeech").innerText = "Your repeated sentence will appear here...";
+            document.getElementById("result").innerHTML = "";
+            document.getElementById("repeatBtn").disabled = true;
+            document.getElementById("nextBtn").style.display = "none";
+
+            speakText(currentSentence, randomIndex);
+        }
+
+        function reSpeakSentence() {
+            document.getElementById("status").innerText = "🔊 Listen again carefully...";
+            let index = sentences.indexOf(currentSentence);
+            speakText(currentSentence, index);
+        }
+
+        function speakText(text, index) {
+            window.speechSynthesis.cancel();
+
+            setTimeout(function() {
+                let speech = new SpeechSynthesisUtterance(text);
+                speech.lang = "en-US";
+                speech.pitch = 1;
+                speech.volume = 1;
+                speech.rate = index >= 8 ? 0.82 : 0.9;
+
+                speech.onend = function() {
+                    hasPlayed = true;
+                    document.getElementById("status").innerText = "Now repeat the sentence 🎤";
+                    document.getElementById("repeatBtn").disabled = false;
+                };
+
+                window.speechSynthesis.speak(speech);
+            }, 200);
+        }
+
+        function startListeningRecognition() {
+            document.getElementById("status").innerText = "🎤 Listening...";
+            document.getElementById("userSpeech").innerText = "Listening...";
+
+            let recognition = new webkitSpeechRecognition();
+            recognition.lang = "en-US";
+            recognition.continuous = false;
+            recognition.interimResults = false;
+
+            recognition.onresult = function(event) {
+                let spokenText = event.results[0][0].transcript;
+                document.getElementById("userSpeech").innerText = spokenText;
+                hasRepeated = true;
+                checkAccuracy(spokenText);
+            };
+
+            recognition.onerror = function() {
+                document.getElementById("status").innerText = "Could not hear you. Try again.";
+                document.getElementById("repeatBtn").disabled = false;
+            };
+
+            recognition.start();
+        }
+
+        function checkAccuracy(spokenText) {
+            let original = currentSentence.toLowerCase().trim();
+            let spoken = spokenText.toLowerCase().trim();
+
+            let originalWords = original.split(" ");
+            let spokenWords = spoken.split(" ");
+
+            let matchedWords = 0;
+            for (let i = 0; i < originalWords.length; i++) {
+                if (spokenWords.includes(originalWords[i])) {
+                    matchedWords++;
+                }
+            }
+
+            let accuracy = Math.round((matchedWords / originalWords.length) * 100);
+            let score = Math.round(accuracy / 10);
+            if (score > 10) score = 10;
+            if (score < 1) score = 1;
+
+            localStorage.setItem("listeningScore", score);
+
+            let emoji, feedback;
+
+            if (accuracy >= 90) {
+                emoji = "🎉";
+                feedback = "Excellent! Almost perfect repetition.";
+            } else if (accuracy >= 70) {
+                emoji = "✅";
+                feedback = "Good attempt! A few words were off.";
+            } else if (accuracy >= 50) {
+                emoji = "⚠️";
+                feedback = "Needs improvement. Listen more carefully.";
+            } else {
+                emoji = "❌";
+                feedback = "Incorrect. Try listening more carefully.";
+            }
+
+            document.getElementById("result").innerHTML = `
+                <p>${emoji} <strong>${feedback}</strong></p>
+                <p><strong>Accuracy:</strong> ${accuracy}%</p>
+                <p><strong>Score:</strong> ${score}/10</p>
+                <br>
+                <p><strong>Correct Sentence:</strong></p>
+                <p style="color:#c4b5fd">${currentSentence}</p>
+            `;
+
+            document.getElementById("status").innerText = "Done! Click Next or Finish.";
+            document.getElementById("nextBtn").style.display = "block";
+            document.getElementById("repeatBtn").disabled = true;
+        }
+
+        function nextSentence() {
+            hasPlayed = false;
+            hasRepeated = false;
+            pickNewSentence();
+        }
+
+    </script>
+
+</body>
+</html>

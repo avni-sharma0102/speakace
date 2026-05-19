@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Performance Report</title>
+
+    <link rel="stylesheet"
+          href="css/style.css">
+
+</head>
+
+<body>
+
+    <header>
+
+        <h1>Performance Report</h1>
+
+        <p>
+            Your Communication Analysis
+        </p>
+
+    </header>
+
+    <div class="container">
+
+        <div class="card">
+
+            <h2>Scores</h2>
+
+            <p>
+                Pronunciation:
+                <span id="pronunciationScore">8</span>/10
+            </p>
+
+            <p>
+                Fluency:
+                <span id="fluencyScore">7</span>/10
+            </p>
+
+            <p>
+                Listening:
+                <span id="listeningScore">9</span>/10
+            </p>
+
+            <p>
+                Confidence:
+                <span id="confidenceScore">8</span>/10
+            </p>
+
+        </div>
+
+        <div class="card">
+
+            <h2>Improvement Suggestions</h2>
+
+            <ul id="suggestions">
+
+                <li>Try speaking more clearly.</li>
+
+                <li>Reduce pauses while speaking.</li>
+
+                <li>Practice pronunciation daily.</li>
+
+                <li>Improve listening concentration.</li>
+
+            </ul>
+
+        </div>
+
+    </div>
+<script>
+
+let speech =
+    localStorage.getItem("spokenText");
+
+if(!speech){
+
+    speech = "";
+}
+
+speech = speech.toLowerCase();
+
+
+
+let words =
+    speech.split(" ");
+
+let wordCount =
+    words.length;
+
+
+
+let fillerWords = [
+
+    "umm",
+    "uh",
+    "aaa",
+    "like",
+    "basically",
+    "you know"
+
+];
+
+
+
+let fillerCount = 0;
+
+
+
+for(let i = 0;
+    i < words.length;
+    i++){
+
+    if(fillerWords.includes(words[i])){
+
+        fillerCount++;
+    }
+}
+
+
+
+let fluency = 8;
+
+
+
+if(wordCount < 15){
+
+    fluency -= 3;
+}
+
+
+
+if(fillerCount >= 3){
+
+    fluency -= 2;
+}
+
+
+
+if(fluency < 1){
+
+    fluency = 1;
+}
+
+
+
+let confidence = 8;
+
+
+
+if(fillerCount >= 4){
+
+    confidence -= 3;
+}
+
+
+
+if(wordCount < 10){
+
+    confidence -= 2;
+}
+
+
+
+if(confidence < 1){
+
+    confidence = 1;
+}
+
+
+
+let pronunciation = 8;
+
+
+
+if(fillerCount >= 2){
+
+    pronunciation -= 2;
+}
+
+
+
+if(pronunciation < 1){
+
+    pronunciation = 1;
+}
+
+
+
+let listening =
+    localStorage.getItem("listeningScore");
+
+
+
+if(!listening){
+
+    listening = 7;
+}
+
+
+
+document.getElementById("fluencyScore")
+    .innerText = fluency;
+
+
+
+document.getElementById("confidenceScore")
+    .innerText = confidence;
+
+
+
+document.getElementById("pronunciationScore")
+    .innerText = pronunciation;
+
+
+
+document.getElementById("listeningScore")
+    .innerText = listening;
+
+
+
+let suggestions =
+    document.getElementById("suggestions");
+
+
+
+suggestions.innerHTML = "";
+
+
+
+if(fillerCount >= 3){
+
+    suggestions.innerHTML +=
+
+    "<li>Reduce filler words like 'umm' and 'like'.</li>";
+}
+
+
+
+if(wordCount < 15){
+
+    suggestions.innerHTML +=
+
+    "<li>Try speaking with more detailed sentences.</li>";
+}
+
+
+
+if(confidence < 6){
+
+    suggestions.innerHTML +=
+
+    "<li>Speak more confidently and avoid hesitation.</li>";
+}
+
+
+
+if(pronunciation < 6){
+
+    suggestions.innerHTML +=
+
+    "<li>Practice clearer pronunciation.</li>";
+}
+
+
+
+if(listening < 7){
+
+    suggestions.innerHTML +=
+
+    "<li>Improve listening concentration.</li>";
+}
+
+
+
+if(suggestions.innerHTML === ""){
+
+    suggestions.innerHTML +=
+
+    "<li>Excellent communication performance.</li>";
+}
+
+</script>
+</body>
+
+</html>

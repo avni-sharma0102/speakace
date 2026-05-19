@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Read Aloud Practice</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+    <header>
+        <h1>Read Aloud</h1>
+        <p>Read the sentence clearly and accurately</p>
+    </header>
+
+    <div class="card">
+
+        <h2 id="sentence">Click below to get a sentence</h2>
+
+        <button onclick="generateSentence()">Get Sentence</button>
+
+        <br><br>
+
+        <button onclick="startReading()">Start Reading</button>
+
+        <br><br>
+
+        <h3>Your Speech:</h3>
+        <p id="output">Your speech will appear here...</p>
+
+        <br>
+
+        <button onclick="checkReadAloud()">Check Accuracy</button>
+
+        <br><br>
+
+        <div id="result"></div>
+
+        <br>
+
+        <a href="report.html">
+            <button>Finish Round</button>
+        </a>
+
+    </div>
+
+    <script>
+
+        let readAloudSentences = [
+            "The quarterly results exceeded the expectations of most financial analysts",
+            "Effective communication is the foundation of every successful organization",
+            "The project deadline was extended due to unforeseen technical difficulties",
+            "Collaboration between departments leads to more innovative business solutions",
+            "Artificial intelligence is transforming the way companies manage their operations",
+            "Customer satisfaction depends heavily on the quality of after-sales service",
+            "The training program was designed to enhance employee productivity and morale",
+            "Global supply chain disruptions have affected manufacturing timelines worldwide",
+            "Digital transformation requires both technical expertise and change management skills",
+            "The performance appraisal system was revised to make evaluations more transparent",
+            "Strong leadership involves motivating teams even during periods of uncertainty",
+            "Data privacy regulations have become increasingly important for technology companies",
+            "Punctuality and professionalism are qualities highly valued in corporate environments",
+            "Adaptability is one of the most sought after skills in today's job market",
+            "Analytical thinking and problem solving are essential for career growth in any field",
+            "Employees who take initiative are more likely to be considered for leadership roles",
+            "Critical thinking helps professionals make better decisions under pressure",
+            "Maintaining a positive attitude during challenges reflects strong professional maturity",
+            "The organization implemented a new policy to promote diversity and inclusion",
+            "Miscommunication between teams can result in costly delays and project failures"
+        ];
+
+        let currentSentence = "";
+        let userSpokenText = "";
+        let startTime = null;
+
+        function generateSentence() {
+            let randomIndex = Math.floor(Math.random() * readAloudSentences.length);
+            currentSentence = readAloudSentences[randomIndex];
+            document.getElementById("sentence").innerText = currentSentence;
+            document.getElementById("output").innerText = "Your speech will appear here...";
+            document.getElementById("result").innerHTML = "";
+            userSpokenText = "";
+        }
+
+        function startReading() {
+            if (!currentSentence) {
+                alert("Please get a sentence first!");
+                return;
+            }
+
+            let recognition = new webkitSpeechRecognition();
+            recognition.lang = "en-US";
+            recognition.continuous = false;
+            recognition.interimResults = false;
+
+            startTime = Date.now();
+
+            recognition.onresult = function(event) {
+                userSpokenText = event.results[0][0].transcript;
+                document.getElementById("output").innerText = userSpokenText;
+            };
+
+            recognition.start();
+        }
+
+        function checkReadAloud() {
+
+            if (!userSpokenText) {
+                alert("Please read the sentence first!");
+                return;
+            }
+
+            let original = currentSentence.toLowerCase().trim();
+            let spoken = userSpokenText.toLowerCase().trim();
+
+            // Word matching
+            let originalWords = original.split(" ");
+            let spokenWords = spoken.split(" ");
+
+            let matchedWords = 0;
+            for (let i = 0; i < originalWords.length; i++) {
+                if (spokenWords.includes(originalWords[i])) {
+                    matchedWords++;
+                }
+            }
+
+            let accuracyPercent = Math.round((matchedWords / originalWords.length) * 100);
+
+            // Speed check (ideal is 120-150 words per minute)
+            let timeTaken = (Date.now() - startTime) / 1000; // in seconds
+            let wordsSpoken = spokenWords.length;
+            let wpm = Math.round((wordsSpoken / timeTaken) * 60);
+
+            let speedFeedback = "";
+            if (wpm < 80) {
+                speedFeedback = "Too slow. Try to speak at a natural pace.";
+            } else if (wpm > 180) {
+                speedFeedback = "Too fast. Slow down for better clarity.";
+            } else {
+                speedFeedback = "Good speaking speed!";
+            }
+
+            // Pronunciation score based on accuracy
+            let pronunciationScore = Math.round(accuracyPercent / 10);
+            if (pronunciationScore > 10) pronunciationScore = 10;
+            if (pronunciationScore < 1) pronunciationScore = 1;
+
+            localStorage.setItem("pronunciationScore", pronunciationScore);
+            localStorage.setItem("readAloudWPM", wpm);
+
+            // Show result
+            let resultDiv = document.getElementById("result");
+            resultDiv.innerHTML = `
+                <p><strong>Accuracy:</strong> ${accuracyPercent}%</p>
+                <p><strong>Words Per Minute:</strong> ${wpm}</p>
+                <p><strong>Speed Feedback:</strong> ${speedFeedback}</p>
+                <p><strong>Pronunciation Score:</strong> ${pronunciationScore}/10</p>
+                <br>
+                ${accuracyPercent < 70 ? "<p>⚠️ You missed some words. Try reading more carefully.</p>" : ""}
+                ${accuracyPercent >= 70 && accuracyPercent < 90 ? "<p>✅ Good attempt! A few words were off.</p>" : ""}
+                ${accuracyPercent >= 90 ? "<p>🎉 Excellent! Very accurate reading.</p>" : ""}
+            `;
+        }
+
+    </script>
+
+</body>
+</html>
