@@ -83,26 +83,49 @@
         }
 
         function startReading() {
-            if (!currentSentence) {
-                alert("Please get a sentence first!");
-                return;
+    if (!currentSentence) {
+        alert("Please get a sentence first!");
+        return;
+    }
+
+    document.getElementById("output").innerText = "🎤 Listening... speak now";
+
+    let recognition = new webkitSpeechRecognition();
+    recognition.lang = "en-US";
+    recognition.continuous = true;
+    recognition.interimResults = true;
+
+    startTime = Date.now();
+
+    recognition.onresult = function(event) {
+        let finalText = "";
+        let interimText = "";
+
+        for (let i = 0; i < event.results.length; i++) {
+            if (event.results[i].isFinal) {
+                finalText += event.results[i][0].transcript;
+            } else {
+                interimText += event.results[i][0].transcript;
             }
-
-            let recognition = new webkitSpeechRecognition();
-            recognition.lang = "en-US";
-            recognition.continuous = false;
-            recognition.interimResults = false;
-
-            startTime = Date.now();
-
-            recognition.onresult = function(event) {
-                userSpokenText = event.results[0][0].transcript;
-                document.getElementById("output").innerText = userSpokenText;
-            };
-
-            recognition.start();
         }
 
+        // show interim text while speaking so user knows its working
+        document.getElementById("output").innerText = finalText || interimText;
+        userSpokenText = finalText || interimText;
+    };
+
+    recognition.onerror = function(event) {
+        document.getElementById("output").innerText = "Error: " + event.error + " — try again";
+    };
+
+    recognition.onend = function() {
+        if (!userSpokenText) {
+            document.getElementById("output").innerText = "Nothing heard. Click Start Reading and speak immediately.";
+        }
+    };
+
+    recognition.start();
+}
         function checkReadAloud() {
 
             if (!userSpokenText) {
